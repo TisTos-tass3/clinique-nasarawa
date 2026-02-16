@@ -23,14 +23,11 @@
         </button>
     </div>
 
-    {# User mini profile in sidebar #}
-    {# {% if app.user %} #}
     <div class="dropdown sidebar-user m-1 rounded">
         <button type="button" class="btn material-shadow-none" data-bs-toggle="dropdown">
             <span class="d-flex align-items-center gap-2">
                 <img class="rounded header-profile-user" src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="Header Avatar">
                 <span class="text-start">
-                    {# <span class="d-block fw-medium sidebar-user-name-text">{{ app.user.fullName }}</span> #}
                     <span class="d-block fs-14 sidebar-user-name-sub-text">
                         <i class="ri ri-circle-fill fs-10 text-success align-baseline"></i> 
                         <span class="align-middle">Online</span>
@@ -38,9 +35,7 @@
                 </span>
             </span>
         </button>
-        {# ... dropdown menu ... #}
     </div>
-    {#{% endif %}#}
 
     <div id="scrollbar">
         <div class="container-fluid">
@@ -48,100 +43,66 @@
             
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
-                
-                {# Dashboard #}
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button">
-                        <i class="ri-dashboard-2-line"></i> 
-                        <span data-key="t-dashboards">Dashboards</span>
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'home' ? 'active' : '' }}"
+                    href="{{ path('home') }}">
+                        <i class="ri-dashboard-line"></i>
+                        <span>Tableau de bord</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarDashboards">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Analytics</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Ecommerce</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">CRM</a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
-
-                {# Apps #}
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button">
-                        <i class="ri-apps-2-line"></i> 
-                        <span data-key="t-apps">Apps</span>
+                    <a class="nav-link menu-link" href="#"  role="button">
+                        <i class="ri-group-line"></i>
+                        <span data-key="t-apps">Patients</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarApps">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Calendar</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Chat</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Email</a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
-
-                {# Ecommerce #}
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarEcommerce" data-bs-toggle="collapse" role="button">
-                        <i class="ri-shopping-cart-2-line"></i> 
-                        <span data-key="t-ecommerce">Ecommerce</span>
+                    <a class="nav-link menu-link" href="#" role="button">
+                        <i class="ri-health-book-line"></i>
+                        <span data-key="t-ecommerce">Consultations</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarEcommerce">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Products</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Orders</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Customers</a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
-
-                {# Pages #}
-                <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>
-                
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarAuth" data-bs-toggle="collapse" role="button">
-                        <i class="ri-account-circle-line"></i> 
-                        <span data-key="t-authentication">Authentication</span>
+                    <a class="nav-link menu-link" href="#" role="button">
+                        <i class="ri-calendar-event-line"></i> 
+                        <span data-key="t-ecommerce">Rendez-vous</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarAuth">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Sign In</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Sign Up</a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
-
-                {# Components #}
-                <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Components</span></li>
-                
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#">
-                        <i class="ri-pencil-ruler-2-line"></i> 
-                        <span data-key="t-base-ui">Base UI</span>
+                    <a class="nav-link menu-link" href="#" role="button">
+                        <i class="ri-cash-line"></i> 
+                        <span data-key="t-ecommerce">Factures</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#" role="button">
+                        <i class="ri-folder-chart-line"></i>
+                        <span data-key="t-ecommerce">Rapports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_hospitalisation' ? 'active' : '' }}"
+                    href="{{ path('app_hospitalisation') }}">
+                        <i class="ri-hospital-line"></i> 
+                        <span data-key="t-ecommerce">Hospitalisation</span>
                     </a>
                 </li>
             </ul>
+             <ul class="navbar-nav" id="navbar-nav">
+                <li class="menu-title"><span data-key="t-menu">Autres</span></li>
+                <li class="nav-item">
+                         <a class="nav-link menu-link" href="#sidebarDashboards" role="button">
+                        <i class="ri-user-line"></i> 
+                        <span data-key="t-dashboards">Utilisateurs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                         <a class="nav-link menu-link" href="#sidebarDashboards" role="button">
+                        <i class="ri-settings-5-line"></i> 
+                        <span data-key="t-dashboards">Paramètres</span>
+                    </a>
+                </li>
+            </ul>    
         </div>
     </div>
     <div class="sidebar-background"></div>
