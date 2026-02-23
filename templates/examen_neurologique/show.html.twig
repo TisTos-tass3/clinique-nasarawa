@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenNeurologique{% endblock %}
+
+{% block body %}
+    <h1>ExamenNeurologique</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ examen_neurologique.id }}</td>
+            </tr>
+            <tr>
+                <th>Conscience</th>
+                <td>{{ examen_neurologique.conscience }}</td>
+            </tr>
+            <tr>
+                <th>TonusMusculaire</th>
+                <td>{{ examen_neurologique.tonusMusculaire }}</td>
+            </tr>
+            <tr>
+                <th>ForceMembreSuperieurD</th>
+                <td>{{ examen_neurologique.forceMembreSuperieurD }}</td>
+            </tr>
+            <tr>
+                <th>ForceMembreSuperieurG</th>
+                <td>{{ examen_neurologique.forceMembreSuperieurG }}</td>
+            </tr>
+            <tr>
+                <th>ForceMembreInferieurD</th>
+                <td>{{ examen_neurologique.forceMembreInferieurD }}</td>
+            </tr>
+            <tr>
+                <th>ForceMembreInferieurG</th>
+                <td>{{ examen_neurologique.forceMembreInferieurG }}</td>
+            </tr>
+            <tr>
+                <th>Babinski</th>
+                <td>{{ examen_neurologique.babinski ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Grasping</th>
+                <td>{{ examen_neurologique.grasping ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>AphasieType</th>
+                <td>{{ examen_neurologique.aphasieType }}</td>
+            </tr>
+            <tr>
+                <th>Agnosie</th>
+                <td>{{ examen_neurologique.agnosie ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>ApraxieType</th>
+                <td>{{ examen_neurologique.apraxieType }}</td>
+            </tr>
+            <tr>
+                <th>TroubleSphincteriens</th>
+                <td>{{ examen_neurologique.troubleSphincteriens }}</td>
+            </tr>
+            <tr>
+                <th>RaideurNuque</th>
+                <td>{{ examen_neurologique.raideurNuque ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Brudzinski</th>
+                <td>{{ examen_neurologique.brudzinski ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Kernig</th>
+                <td>{{ examen_neurologique.kernig ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Notes</th>
+                <td>{{ examen_neurologique.notes }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ examen_neurologique.createdAt ? examen_neurologique.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ModifiedAt</th>
+                <td>{{ examen_neurologique.modifiedAt ? examen_neurologique.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_neurologique_index') }}">back to list</a>
+
+    <a href="{{ path('app_examen_neurologique_edit', {'id': examen_neurologique.id}) }}">edit</a>
+
+    {{ include('examen_neurologique/_delete_form.html.twig') }}
+{% endblock %}

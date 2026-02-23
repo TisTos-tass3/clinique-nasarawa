@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ServiceMedical index{% endblock %}
+
+{% block body %}
+    <h1>ServiceMedical index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Libelle</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for service_medical in service_medicals %}
+            <tr>
+                <td>{{ service_medical.id }}</td>
+                <td>{{ service_medical.libelle }}</td>
+                <td>{{ service_medical.createdAt ? service_medical.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ service_medical.modifiedAt ? service_medical.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_service_medical_show', {'id': service_medical.id}) }}">show</a>
+                    <a href="{{ path('app_service_medical_edit', {'id': service_medical.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_service_medical_new') }}">Create new</a>
+{% endblock %}

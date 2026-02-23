@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TraitementHospitalisation{% endblock %}
+
+{% block body %}
+    <h1>TraitementHospitalisation</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ traitement_hospitalisation.id }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ traitement_hospitalisation.description }}</td>
+            </tr>
+            <tr>
+                <th>DateDebut</th>
+                <td>{{ traitement_hospitalisation.dateDebut ? traitement_hospitalisation.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>DateFin</th>
+                <td>{{ traitement_hospitalisation.dateFin ? traitement_hospitalisation.dateFin|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ traitement_hospitalisation.createdAt ? traitement_hospitalisation.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ModifiedAt</th>
+                <td>{{ traitement_hospitalisation.modifiedAt ? traitement_hospitalisation.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_traitement_hospitalisation_index') }}">back to list</a>
+
+    <a href="{{ path('app_traitement_hospitalisation_edit', {'id': traitement_hospitalisation.id}) }}">edit</a>
+
+    {{ include('traitement_hospitalisation/_delete_form.html.twig') }}
+{% endblock %}

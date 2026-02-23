@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenComplementaire index{% endblock %}
+
+{% block body %}
+    <h1>ExamenComplementaire index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Type</th>
+                <th>Resultat</th>
+                <th>DateExamen</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for examen_complementaire in examen_complementaires %}
+            <tr>
+                <td>{{ examen_complementaire.id }}</td>
+                <td>{{ examen_complementaire.type }}</td>
+                <td>{{ examen_complementaire.resultat }}</td>
+                <td>{{ examen_complementaire.dateExamen ? examen_complementaire.dateExamen|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ examen_complementaire.createdAt ? examen_complementaire.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ examen_complementaire.modifiedAt ? examen_complementaire.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_examen_complementaire_show', {'id': examen_complementaire.id}) }}">show</a>
+                    <a href="{{ path('app_examen_complementaire_edit', {'id': examen_complementaire.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_complementaire_new') }}">Create new</a>
+{% endblock %}

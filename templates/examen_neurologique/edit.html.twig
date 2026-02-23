@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit ExamenNeurologique{% endblock %}
+
+{% block body %}
+    <h1>Edit ExamenNeurologique</h1>
+
+    {{ include('examen_neurologique/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_examen_neurologique_index') }}">back to list</a>
+
+    {{ include('examen_neurologique/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenComplementaire{% endblock %}
+
+{% block body %}
+    <h1>ExamenComplementaire</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ examen_complementaire.id }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ examen_complementaire.type }}</td>
+            </tr>
+            <tr>
+                <th>Resultat</th>
+                <td>{{ examen_complementaire.resultat }}</td>
+            </tr>
+            <tr>
+                <th>DateExamen</th>
+                <td>{{ examen_complementaire.dateExamen ? examen_complementaire.dateExamen|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ examen_complementaire.createdAt ? examen_complementaire.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ModifiedAt</th>
+                <td>{{ examen_complementaire.modifiedAt ? examen_complementaire.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_complementaire_index') }}">back to list</a>
+
+    <a href="{{ path('app_examen_complementaire_edit', {'id': examen_complementaire.id}) }}">edit</a>
+
+    {{ include('examen_complementaire/_delete_form.html.twig') }}
+{% endblock %}
