@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Consultation;
 use App\Entity\RendezVous;
+use App\Enum\StatutConsultation;
 use App\Enum\StatutRendezVous;
 use App\Form\RendezVousType;
 use App\Repository\RendezVousRepository;
@@ -26,27 +28,20 @@ final class RendezVousController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($rv);
-            $em->flush();
 
-            return $this->redirectToRoute('app_rendez_vous_index');
-        }
+    // consultation non obligatoire à la création
+    $rv->setConsultation(null);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    // statut par défaut si vide
+    if (!$rv->getStatut()) {
+        $rv->setStatut(StatutRendezVous::EN_ATTENTE);
+    }
 
-            // 1) consultation non obligatoire à la création
-            $rv->setConsultation(null);
+    $em->persist($rv);
+    $em->flush();
 
-            // 2) statut par défaut si vide (ex: "EN_ATTENTE")
-            if (!$rv->getStatut()) {
-                $rv->setStatut(StatutRendezVous::EN_ATTENTE);
-            }
-
-            $em->persist($rv);
-            $em->flush();
-
-            return $this->redirectToRoute('app_rendez_vous_index');
-        }
+    return $this->redirectToRoute('app_rendez_vous_index');
+}
 
         return $this->render('rendez_vous/index.html.twig', [
             'rendezVous' => $rendezVousRepository->findAll(),  
@@ -63,32 +58,32 @@ final class RendezVousController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_rendez_vous_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, RendezVous $rendezVous, EntityManagerInterface $em): Response
-{
-    $form = $this->createForm(RendezVousType::class, $rendezVous);
-    $form->handleRequest($request);
+    public function edit(Request $request, RendezVous $rendezVous, EntityManagerInterface $em): Response
+    {
+        $form = $this->createForm(RendezVousType::class, $rendezVous);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $em->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
 
-        if ($request->isXmlHttpRequest()) {
-            return $this->json(['success' => true]);
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['success' => true]);
+            }
+            return $this->redirectToRoute('app_rendez_vous_index');
         }
-        return $this->redirectToRoute('app_rendez_vous_index');
-    }
 
-    // AJAX: renvoyer uniquement le contenu du form (pour la modale)
-    if ($request->isXmlHttpRequest()) {
+        // AJAX: renvoyer uniquement le contenu du form (pour la modale)
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('rendez_vous/edit.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
+
+        // Hors AJAX: page normale
         return $this->render('rendez_vous/edit.html.twig', [
             'form' => $form->createView(),
         ]);
     }
-
-    // Hors AJAX: page normale
-    return $this->render('rendez_vous/edit.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
 
     #[Route('/{id}', name: 'app_rendez_vous_delete', methods: ['POST'])]
     public function delete(Request $request, RendezVous $rendezVou, EntityManagerInterface $entityManager): Response
@@ -99,5 +94,71 @@ public function edit(Request $request, RendezVous $rendezVous, EntityManagerInte
         }
 
         return $this->redirectToRoute('app_rendez_vous_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/start-consultation', name: 'app_rendez_vous_start_consultation', methods: ['POST'])]
+    public function startConsultation(
+        Request $request,
+        RendezVous $rendezVous,
+        EntityManagerInterface $em
+    ): Response {
+        // 1) CSRF
+        if (!$this->isCsrfTokenValid('start_consultation_' . $rendezVous->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('CSRF token invalide.');
+        }
+
+        // 2) Empêcher double création
+        if (null !== $rendezVous->getConsultation()) {
+            $this->addFlash('info', 'Une consultation existe déjà pour ce rendez-vous.');
+            return $this->redirectToRoute('app_consultation_show', ['id' => $rendezVous->getConsultation()->getId()]);
+        }
+
+        // 3) Statut RDV autorisé
+        $statut = $rendezVous->getStatut(); // enum
+        $allowed = [
+            StatutRendezVous::PLANIFIE,
+            StatutRendezVous::CONFIRME,
+
+        ];
+        if (!\in_array($statut, $allowed, true)) {
+            $this->addFlash('warning', 'Le rendez-vous doit être PLANIFIE ou CONFIRME pour démarrer la consultation.');
+            return $this->redirectToRoute('app_rendez_vous_index');
+        }
+
+        // 4) Données requises
+        if (null === $rendezVous->getMedecin()) {
+            $this->addFlash('danger', 'Aucun médecin n’est associé à ce rendez-vous.');
+            return $this->redirectToRoute('app_rendez_vous_index');
+        }
+        if (null === $rendezVous->getPatient()) {
+            $this->addFlash('danger', 'Aucun patient n’est associé à ce rendez-vous.');
+            return $this->redirectToRoute('app_rendez_vous_index');
+        }
+
+        // 5) Récupérer/Créer DossierMedical (selon ton choix métier)
+        // Option A (souvent recommandé): le dossier est créé à la création du patient (workflow déjà discuté)
+        $dossier = $rendezVous->getPatient()->getDossierMedical();
+        if (null === $dossier) {
+            $this->addFlash('danger', 'Le patient n’a pas de dossier médical. Créez-le avant de démarrer la consultation.');
+            return $this->redirectToRoute('app_rendez_vous_index');
+        }
+
+        // 6) Créer Consultation
+        $consultation = new Consultation();
+        $consultation->setRendezVous($rendezVous);
+        $consultation->setMedecin($rendezVous->getMedecin());
+        $consultation->setDossierMedical($dossier);
+        $consultation->setStatut(StatutConsultation::EN_COURS); // ou BROUILLON
+
+        // 7) Mettre à jour le RDV (optionnel mais cohérent)
+        //$rendezVous->setStatut(StatutRendezVous::EN_COURS);
+
+        $em->persist($consultation);
+        $em->flush();
+
+        $this->addFlash('success', 'Consultation démarrée.');
+
+        // 8) Rediriger vers la fiche consultation
+        return $this->redirectToRoute('app_consultation_index');
     }
 }

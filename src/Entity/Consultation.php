@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-
+use App\Enum\StatutConsultation;
 use App\Repository\ConsultationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -51,6 +51,19 @@ class Consultation
 
     #[ORM\Column(nullable: true)]
     private ?int $frequenceCardiaque = null;
+
+    #[ORM\Column(enumType: StatutConsultation::class)]
+    private StatutConsultation $statut = StatutConsultation::BROUILLON;
+     public function getStatut(): StatutConsultation
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(StatutConsultation $statut): self
+    {
+        $this->statut = $statut;
+        return $this;
+    }
 
     #[ORM\OneToMany(mappedBy: 'consultation', targetEntity: Prescription::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $prescriptions;
