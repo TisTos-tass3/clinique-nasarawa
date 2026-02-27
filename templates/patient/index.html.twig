@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Patients | Clinique Nasarawa{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0 flex-grow-1">
+                    Répertoire des Patients
+                </h5>
+
+                
+                <a href="{{ path('patient_new') }}" class="btn btn-primary">
+                    <i class="ri-user-add-line align-bottom me-1"></i> Nouveau Patient
+                </a>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" class="form-control search" placeholder="Rechercher un patient...">
+                            <i class="ri-search-line search-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle" id="patientsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom & Prénom</th>
+                                <th>Téléphone</th>
+                                <th>Sexe</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            
+                            <tr>
+                                <td class="fw-medium text-primary">#PAT-2026</td>
+                                <td>Maman Sani</td>
+                                <td>+227 90 00 00 00</td>
+                                <td><span class="badge bg-soft-info text-info">Masculin</span></td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ path('patient_show') }}" class="btn btn-soft-info btn-sm">
+                                            <i class="ri-eye-line align-bottom me-1"></i> Voir
+                                        </a>
+                                        <a href="#" class="btn btn-soft-warning btn-sm">
+                                            <i class="ri-pencil-line align-bottom me-1"></i> Modifier
+                                        </a>
+                                        <button class="btn btn-soft-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteRecordModal">
+                                            <i class="ri-delete-bin-line align-bottom me-1"></i> Supprimer
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                          
+                            <tr>
+                                <td class="fw-medium text-primary">#PAT-2027</td>
+                                <td>Halima Issa</td>
+                                <td>+227 91 11 11 11</td>
+                                <td><span class="badge bg-soft-danger text-danger">Féminin</span></td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ path('patient_show') }}" class="btn btn-soft-info btn-sm">
+                                            <i class="ri-eye-line align-bottom me-1"></i> Voir
+                                        </a>
+                                        <a href="#" class="btn btn-soft-warning btn-sm">
+                                            <i class="ri-pencil-line align-bottom me-1"></i> Modifier
+                                        </a>
+                                        <button class="btn btn-soft-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteRecordModal">
+                                            <i class="ri-delete-bin-line align-bottom me-1"></i> Supprimer
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                   
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">Précédent</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled"><a class="page-link" href="#">Suivant</a></li>
+                        </ul>
+                    </nav>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ include('partials/_modal_delete.html.twig', {
+    'title': 'Supprimer le patient',
+    'message': 'Voulez-vous vraiment supprimer ce dossier patient ?'
+}) }}
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("searchInput");
+    if(searchInput) {
+        searchInput.addEventListener("keyup", function() {
+            let value = this.value.toLowerCase();
+            let rows = document.querySelectorAll("#patientsTable tbody tr");
+
+            rows.forEach(function(row) {
+                let text = row.innerText.toLowerCase();
+                row.style.display = text.includes(value) ? "" : "none";
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

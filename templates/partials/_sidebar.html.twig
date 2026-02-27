@@ -50,8 +50,9 @@
                         <span>Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#"  role="button">
+                <li class="nav-item">     
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') starts with 'patient' ? 'active' : '' }}" 
+                    href="{{ path('patient_index') }}">
                         <i class="ri-group-line"></i>
                         <span data-key="t-apps">Patients</span>
                     </a>

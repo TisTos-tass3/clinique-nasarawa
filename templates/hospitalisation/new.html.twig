@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Hospitalisation{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="{{ path('app_hospitalisation') }}" class="text-secondary text-decoration-none">
+            ← Retour à la liste
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+           <h3 class="card-title mb-0 text-white">Formulaire d'Admission</h3>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="row">
+                   
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label font-weight-bold">Patient</label>
+                        <select class="form-select">
+                            <option selected disabled>Sélectionner le patient...</option>
+                            {# BACKEND : Liste des patients #}
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label font-weight-bold">Médecin Référent</label>
+                        <select class="form-select border-primary">
+                            <option selected disabled>Choisir le médecin responsable...</option>
+                            {# BACKEND : Liste des utilisateurs avec rôle Médecin #}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Date et Heure d'entrée</label>
+                        <input type="datetime-local" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Date de sortie (prévisionnelle)</label>
+                        <input type="datetime-local" class="form-control">
+                    </div>
+                </div>
+
+                
+                <div class="mb-3">
+                    <label class="form-label">Motif d'admission</label>
+                    <input type="text" class="form-control" placeholder="Ex: Insuffisance respiratoire, Suite consultation..." required>
+                </div>
+
+                
+                <div class="mb-3">
+                    <label class="form-label">Histoire de la maladie / Observations initiales</label>
+                    <textarea class="form-control" rows="4" placeholder="Détaillez les symptômes et l'état actuel..."></textarea>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="reset" class="btn btn-outline-secondary me-md-2">Vider les champs</button>
+                    <button type="submit" class="btn btn-success px-5">Confirmer l'admission</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
