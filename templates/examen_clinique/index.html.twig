@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenClinique index{% endblock %}
+
+{% block body %}
+    <h1>ExamenClinique index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>TensionArterielle</th>
+                <th>Pouls</th>
+                <th>Temperature</th>
+                <th>SaturationOxygene</th>
+                <th>FrequenceRespiratoire</th>
+                <th>Poids</th>
+                <th>Taille</th>
+                <th>Imc</th>
+                <th>Deshydratation</th>
+                <th>Oedeme</th>
+                <th>Notes</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for examen_clinique in examen_cliniques %}
+            <tr>
+                <td>{{ examen_clinique.id }}</td>
+                <td>{{ examen_clinique.tensionArterielle }}</td>
+                <td>{{ examen_clinique.pouls }}</td>
+                <td>{{ examen_clinique.temperature }}</td>
+                <td>{{ examen_clinique.saturationOxygene }}</td>
+                <td>{{ examen_clinique.frequenceRespiratoire }}</td>
+                <td>{{ examen_clinique.poids }}</td>
+                <td>{{ examen_clinique.taille }}</td>
+                <td>{{ examen_clinique.imc }}</td>
+                <td>{{ examen_clinique.deshydratation ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_clinique.oedeme ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_clinique.notes }}</td>
+                <td>{{ examen_clinique.createdAt ? examen_clinique.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ examen_clinique.modifiedAt ? examen_clinique.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_examen_clinique_show', {'id': examen_clinique.id}) }}">show</a>
+                    <a href="{{ path('app_examen_clinique_edit', {'id': examen_clinique.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="15">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_clinique_new') }}">Create new</a>
+{% endblock %}

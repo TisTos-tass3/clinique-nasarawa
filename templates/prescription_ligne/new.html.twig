@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New PrescriptionLigne{% endblock %}
+
+{% block body %}
+    <h1>Create new PrescriptionLigne</h1>
+
+    {{ include('prescription_ligne/_form.html.twig') }}
+
+    <a href="{{ path('app_prescription_ligne_index') }}">back to list</a>
+{% endblock %}

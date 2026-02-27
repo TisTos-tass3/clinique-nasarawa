@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TraitementHospitalisation index{% endblock %}
+
+{% block body %}
+    <h1>TraitementHospitalisation index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Description</th>
+                <th>DateDebut</th>
+                <th>DateFin</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for traitement_hospitalisation in traitement_hospitalisations %}
+            <tr>
+                <td>{{ traitement_hospitalisation.id }}</td>
+                <td>{{ traitement_hospitalisation.description }}</td>
+                <td>{{ traitement_hospitalisation.dateDebut ? traitement_hospitalisation.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ traitement_hospitalisation.dateFin ? traitement_hospitalisation.dateFin|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ traitement_hospitalisation.createdAt ? traitement_hospitalisation.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ traitement_hospitalisation.modifiedAt ? traitement_hospitalisation.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_traitement_hospitalisation_show', {'id': traitement_hospitalisation.id}) }}">show</a>
+                    <a href="{{ path('app_traitement_hospitalisation_edit', {'id': traitement_hospitalisation.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_traitement_hospitalisation_new') }}">Create new</a>
+{% endblock %}

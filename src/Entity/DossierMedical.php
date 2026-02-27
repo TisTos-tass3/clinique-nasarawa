@@ -19,8 +19,8 @@ class DossierMedical
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'dossierMedical')]
-    #[ORM\JoinColumn(nullable: false)]
-    private Patient $patient;
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Patient $patient = null;
 
     #[ORM\Column(length: 50, unique: true)]
     private string $numeroDossier;

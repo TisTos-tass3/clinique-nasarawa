@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Antecedent{% endblock %}
+
+{% block body %}
+    <h1>Edit Antecedent</h1>
+
+    {{ include('antecedent/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_antecedent_index') }}">back to list</a>
+
+    {{ include('antecedent/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenNeurologique index{% endblock %}
+
+{% block body %}
+    <h1>ExamenNeurologique index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Conscience</th>
+                <th>TonusMusculaire</th>
+                <th>ForceMembreSuperieurD</th>
+                <th>ForceMembreSuperieurG</th>
+                <th>ForceMembreInferieurD</th>
+                <th>ForceMembreInferieurG</th>
+                <th>Babinski</th>
+                <th>Grasping</th>
+                <th>AphasieType</th>
+                <th>Agnosie</th>
+                <th>ApraxieType</th>
+                <th>TroubleSphincteriens</th>
+                <th>RaideurNuque</th>
+                <th>Brudzinski</th>
+                <th>Kernig</th>
+                <th>Notes</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for examen_neurologique in examen_neurologiques %}
+            <tr>
+                <td>{{ examen_neurologique.id }}</td>
+                <td>{{ examen_neurologique.conscience }}</td>
+                <td>{{ examen_neurologique.tonusMusculaire }}</td>
+                <td>{{ examen_neurologique.forceMembreSuperieurD }}</td>
+                <td>{{ examen_neurologique.forceMembreSuperieurG }}</td>
+                <td>{{ examen_neurologique.forceMembreInferieurD }}</td>
+                <td>{{ examen_neurologique.forceMembreInferieurG }}</td>
+                <td>{{ examen_neurologique.babinski ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.grasping ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.aphasieType }}</td>
+                <td>{{ examen_neurologique.agnosie ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.apraxieType }}</td>
+                <td>{{ examen_neurologique.troubleSphincteriens }}</td>
+                <td>{{ examen_neurologique.raideurNuque ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.brudzinski ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.kernig ? 'Yes' : 'No' }}</td>
+                <td>{{ examen_neurologique.notes }}</td>
+                <td>{{ examen_neurologique.createdAt ? examen_neurologique.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ examen_neurologique.modifiedAt ? examen_neurologique.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_examen_neurologique_show', {'id': examen_neurologique.id}) }}">show</a>
+                    <a href="{{ path('app_examen_neurologique_edit', {'id': examen_neurologique.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="20">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_neurologique_new') }}">Create new</a>
+{% endblock %}

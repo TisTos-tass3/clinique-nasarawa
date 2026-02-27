@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ExamenClinique{% endblock %}
+
+{% block body %}
+    <h1>ExamenClinique</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ examen_clinique.id }}</td>
+            </tr>
+            <tr>
+                <th>TensionArterielle</th>
+                <td>{{ examen_clinique.tensionArterielle }}</td>
+            </tr>
+            <tr>
+                <th>Pouls</th>
+                <td>{{ examen_clinique.pouls }}</td>
+            </tr>
+            <tr>
+                <th>Temperature</th>
+                <td>{{ examen_clinique.temperature }}</td>
+            </tr>
+            <tr>
+                <th>SaturationOxygene</th>
+                <td>{{ examen_clinique.saturationOxygene }}</td>
+            </tr>
+            <tr>
+                <th>FrequenceRespiratoire</th>
+                <td>{{ examen_clinique.frequenceRespiratoire }}</td>
+            </tr>
+            <tr>
+                <th>Poids</th>
+                <td>{{ examen_clinique.poids }}</td>
+            </tr>
+            <tr>
+                <th>Taille</th>
+                <td>{{ examen_clinique.taille }}</td>
+            </tr>
+            <tr>
+                <th>Imc</th>
+                <td>{{ examen_clinique.imc }}</td>
+            </tr>
+            <tr>
+                <th>Deshydratation</th>
+                <td>{{ examen_clinique.deshydratation ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Oedeme</th>
+                <td>{{ examen_clinique.oedeme ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Notes</th>
+                <td>{{ examen_clinique.notes }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ examen_clinique.createdAt ? examen_clinique.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ModifiedAt</th>
+                <td>{{ examen_clinique.modifiedAt ? examen_clinique.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_examen_clinique_index') }}">back to list</a>
+
+    <a href="{{ path('app_examen_clinique_edit', {'id': examen_clinique.id}) }}">edit</a>
+
+    {{ include('examen_clinique/_delete_form.html.twig') }}
+{% endblock %}

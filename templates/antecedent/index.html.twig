@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Antecedent index{% endblock %}
+
+{% block body %}
+    <h1>Antecedent index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for antecedent in antecedents %}
+            <tr>
+                <td>{{ antecedent.id }}</td>
+                <td>{{ antecedent.type }}</td>
+                <td>{{ antecedent.description }}</td>
+                <td>{{ antecedent.createdAt ? antecedent.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ antecedent.modifiedAt ? antecedent.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_antecedent_show', {'id': antecedent.id}) }}">show</a>
+                    <a href="{{ path('app_antecedent_edit', {'id': antecedent.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_antecedent_new') }}">Create new</a>
+{% endblock %}

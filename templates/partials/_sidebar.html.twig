@@ -50,27 +50,30 @@
                         <span>Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item">     
-                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') starts with 'patient' ? 'active' : '' }}" 
-                    href="{{ path('patient_index') }}">
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_patient_index' ? 'active' : '' }}"
+                    href="{{ path('app_patient_index') }}">
                         <i class="ri-group-line"></i>
                         <span data-key="t-apps">Patients</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#" role="button">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_consultation_index' ? 'active' : '' }}"
+                    href="{{ path('app_consultation_index') }}">
                         <i class="ri-health-book-line"></i>
                         <span data-key="t-ecommerce">Consultations</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#" role="button">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_rendez_vous_index' ? 'active' : '' }}"
+                    href="{{ path('app_rendez_vous_index') }}">
                         <i class="ri-calendar-event-line"></i> 
                         <span data-key="t-ecommerce">Rendez-vous</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#" role="button">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_facture_index' ? 'active' : '' }}"
+                    href="{{ path('app_facture_index') }}">
                         <i class="ri-cash-line"></i> 
                         <span data-key="t-ecommerce">Factures</span>
                     </a>
@@ -82,8 +85,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_hospitalisation' ? 'active' : '' }}"
-                    href="{{ path('app_hospitalisation') }}">
+                    <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_hospitalisation_index' ? 'active' : '' }}"
+                    href="{{ path('app_hospitalisation_index') }}">
                         <i class="ri-hospital-line"></i> 
                         <span data-key="t-ecommerce">Hospitalisation</span>
                     </a>
@@ -92,13 +95,15 @@
              <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Autres</span></li>
                 <li class="nav-item">
-                         <a class="nav-link menu-link" href="#sidebarDashboards" role="button">
+                          <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_utilisateur_index' ? 'active' : '' }}"
+                    href="{{ path('app_utilisateur_index') }}">
                         <i class="ri-user-line"></i> 
                         <span data-key="t-dashboards">Utilisateurs</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                         <a class="nav-link menu-link" href="#sidebarDashboards" role="button">
+                        <a class="nav-link menu-link {{ app.request.attributes.get('_route') == 'app_utilisateur_param' ? 'active' : '' }}"
+                    href="{{ path('app_utilisateur_param') }}">
                         <i class="ri-settings-5-line"></i> 
                         <span data-key="t-dashboards">Paramètres</span>
                     </a>

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PrescriptionLigne index{% endblock %}
+
+{% block body %}
+    <h1>PrescriptionLigne index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Quantite</th>
+                <th>Posologie</th>
+                <th>Duree</th>
+                <th>CreatedAt</th>
+                <th>ModifiedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for prescription_ligne in prescription_lignes %}
+            <tr>
+                <td>{{ prescription_ligne.id }}</td>
+                <td>{{ prescription_ligne.quantite }}</td>
+                <td>{{ prescription_ligne.posologie }}</td>
+                <td>{{ prescription_ligne.duree }}</td>
+                <td>{{ prescription_ligne.createdAt ? prescription_ligne.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ prescription_ligne.modifiedAt ? prescription_ligne.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_prescription_ligne_show', {'id': prescription_ligne.id}) }}">show</a>
+                    <a href="{{ path('app_prescription_ligne_edit', {'id': prescription_ligne.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_prescription_ligne_new') }}">Create new</a>
+{% endblock %}

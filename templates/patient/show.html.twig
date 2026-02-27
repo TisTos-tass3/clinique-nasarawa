@@ -1,63 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Profil Patient {% endblock %}
+{% block title %}Patient{% endblock %}
 
 {% block body %}
-<div class="row">
-    <div class="col-xxl-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <div class="position-relative d-inline-block">
-                    <div class="avatar-lg">
-                        <div class="avatar-title bg-light text-primary rounded-circle fs-24">MS</div>
-                    </div>
-                </div>
-                <h5 class="mt-3 mb-1">Maman Sani</h5>
-                <p class="text-muted">Code Patient: #PAT-2026</p>
-                
-                <div class="table-responsive">
-                    <table class="table table-borderless mb-0">
-                        <tbody>
-                            <tr>
-                                <th class="ps-0" scope="row">Groupe :</th>
-                                <td class="text-muted">O Positif</td>
-                            </tr>
-                            <tr>
-                                <th class="ps-0" scope="row">Tel :</th>
-                                <td class="text-muted">+227 90 00 00 00</td>
-                            </tr>
-                            <tr>
-                                <th class="ps-0" scope="row">Âge :</th>
-                                <td class="text-muted">39 ans</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h1>Patient</h1>
 
-    <div class="col-xxl-9">
-        <div class="card">
-            <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1">Historique Médical</h4>
-            </div>
-            <div class="card-body">
-            
-                <div class="acitivity-timeline acitivity-main">
-                    <div class="acitivity-item d-flex mb-3">
-                        <div class="flex-shrink-0">
-                            <i class="ri-hospital-line acitivity-avatar bg-soft-primary text-primary"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Hospitalisation : Paludisme Grave</h6>
-                            <p class="text-muted mb-2">Admis par Dr. Traoré</p>
-                            <small class="mb-0 text-muted">15 Janvier 2026</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ patient.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ patient.nom }}</td>
+            </tr>
+            <tr>
+                <th>Prenom</th>
+                <td>{{ patient.prenom }}</td>
+            </tr>
+            <tr>
+                <th>DateNaissance</th>
+                <td>{{ patient.dateNaissance ? patient.dateNaissance|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Telephone</th>
+                <td>{{ patient.telephone }}</td>
+            </tr>
+            <tr>
+                <th>Code</th>
+                <td>{{ patient.code }}</td>
+            </tr>
+            <tr>
+                <th>Sexe</th>
+                <td>{{ patient.sexe }}</td>
+            </tr>
+            <tr>
+                <th>Adresse</th>
+                <td>{{ patient.adresse }}</td>
+            </tr>
+            <tr>
+                <th>GroupeSanguin</th>
+                <td>{{ patient.groupeSanguin }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ patient.createdAt ? patient.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>ModifiedAt</th>
+                <td>{{ patient.modifiedAt ? patient.modifiedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_patient_index') }}">back to list</a>
+
+    <a href="{{ path('app_patient_edit', {'id': patient.id}) }}">edit</a>
+
+    {{ include('patient/_delete_form.html.twig') }}
 {% endblock %}
