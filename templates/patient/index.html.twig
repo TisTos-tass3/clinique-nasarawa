@@ -141,46 +141,120 @@
 
   </div>
 </div>
-
 {# =========================
-   MODAL AJOUT PATIENT
+   MODAL AJOUT PATIENT (PRO)
 ========================= #}
 <div class="modal fade" id="addPatientModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
     <div class="modal-content border-0 shadow">
 
       <div class="modal-header bg-white">
         <h5 class="modal-title fw-semibold">
-          <i class="fa fa-plus me-2 text-primary"></i> Nouveau patient
+          <i class="fa fa-user-plus me-2 text-primary"></i> Nouveau patient
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
       <div class="modal-body">
-        {{ form_start(form, {'attr': {'id': 'PatientForm'}}) }}
+        <style>
+          .p-form .section{
+            border:1px solid rgba(0,0,0,.06);
+            border-radius:14px;
+            padding:14px;
+            background:#fff;
+            margin-bottom:12px;
+          }
+          .p-form .section-title{
+            font-weight:900;
+            font-size:.95rem;
+            margin-bottom:10px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:#111827;
+          }
+          .p-form .form-label{ font-weight:700; }
+          .p-form .form-control, .p-form .form-select{ border-radius:12px; }
+        </style>
 
-        <div class="row g-3">
-          <div class="col-md-6">{{ form_row(form.nom) }}</div>
-          <div class="col-md-6">{{ form_row(form.prenom) }}</div>
+        {{ form_start(form, {'attr': {'id': 'PatientForm', 'class': 'p-form', 'novalidate': 'novalidate'}}) }}
 
-          <div class="col-md-6">{{ form_row(form.dateNaissance) }}</div>
-          <div class="col-md-6">{{ form_row(form.sexe) }}</div>
+        {% if form_errors(form) %}
+          <div class="alert alert-danger d-flex gap-2 align-items-start">
+            <i class="fa fa-triangle-exclamation mt-1"></i>
+            <div>
+              <div class="fw-semibold">Veuillez corriger les erreurs du formulaire.</div>
+              <div class="small">{{ form_errors(form) }}</div>
+            </div>
+          </div>
+        {% endif %}
 
-          <div class="col-md-6">{{ form_row(form.telephone) }}</div>
-          <div class="col-md-6">{{ form_row(form.code) }}</div>
+        {# ========= IDENTITÉ ========= #}
+        <div class="section">
+          <div class="section-title"><i class="fa fa-id-card text-primary"></i> Identité</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">{{ form_row(form.nom) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.prenom) }}</div>
 
-          <div class="col-md-6">{{ form_row(form.groupeSanguin) }}</div>
-          <div class="col-md-6">{{ form_row(form.adresse) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.dateNaissance) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.sexe) }}</div>
+
+            <div class="col-12 col-md-6">{{ form_row(form.telephone) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.code) }}</div>
+
+            <div class="col-12 col-md-6">{{ form_row(form.groupeSanguin) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.adresse) }}</div>
+          </div>
         </div>
 
-        <div class="d-flex justify-content-end mt-4 gap-2">
+        {# ========= CONTACT D’URGENCE ========= #}
+        <div class="section">
+          <div class="section-title"><i class="fa fa-phone text-primary"></i> Contact d’urgence</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">{{ form_row(form.emergencyContactName) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.emergencyContactRelation) }}</div>
+
+            <div class="col-12 col-md-6">{{ form_row(form.emergencyContactPhone) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.emergencyContactAddress) }}</div>
+          </div>
+        </div>
+
+        {# ========= PARAMÈTRES ========= #}
+        <div class="section">
+          <div class="section-title"><i class="fa fa-weight-scale text-primary"></i> Paramètres</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">{{ form_row(form.taille) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.poids) }}</div>
+
+            <div class="col-12 col-md-6">{{ form_row(form.grossesse) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.handicap) }}</div>
+          </div>
+        </div>
+
+        {# ========= ANTÉCÉDENTS & MÉDICAL ========= #}
+        <div class="section">
+          <div class="section-title"><i class="fa fa-notes-medical text-primary"></i> Antécédents / médical</div>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">{{ form_row(form.allergies) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.maladiesChroniques) }}</div>
+
+            <div class="col-12 col-md-6">{{ form_row(form.antecedentsMedicaux) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.antecedentsChirurgicaux) }}</div>
+
+            <div class="col-12">{{ form_row(form.traitementEnCours) }}</div>
+          </div>
+        </div>
+
+        {{ form_rest(form) }}
+
+        <div class="d-flex justify-content-end mt-3 gap-2">
           <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Annuler</button>
           <button type="submit" class="btn btn-primary">
             <i class="fa fa-save me-1"></i> Enregistrer
           </button>
         </div>
 
-        {{ form_end(form) }}
+        {{ form_end(form, {'render_rest': false}) }}
       </div>
 
     </div>
