@@ -286,6 +286,31 @@
 
         <div class="card mb-3">
   <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">Examens — Bon laboratoire</h6>
+    <button type="button"
+            class="btn btn-sm btn-outline-primary js-open-bon"
+            data-bs-toggle="modal"
+            data-bs-target="#bonExamenModal"
+            data-url="{{ path('app_consultation_labo_bon_modal', {id: consultation.id}) }}">
+      <i class="ri-add-line me-1"></i> Demander examens
+    </button>
+  </div>
+
+  <div class="card-body" id="bonExamenList">
+    {% include 'laboratoire/bons/_consultation_list.html.twig' with { consultation: consultation, bons: bonsLabo } %}
+  </div>
+</div>
+
+<div class="modal fade" id="bonExamenModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-body p-4 text-center text-muted">Chargement...</div>
+    </div>
+  </div>
+</div>
+
+        <div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
     <h6 class="mb-0">Prescription</h6>
     <span class="badge bg-light text-dark border">
       {{ consultation.prescriptions|length }} document(s)
@@ -300,6 +325,11 @@
         <div class="tab-pane fade" id="pane-examens" role="tabpanel">
             {% if consultation.examensDemandes is defined and consultation.examensDemandes|length > 0 %}
                 <div class="table-responsive">
+                <a class="btn btn-outline-secondary btn-sm"
+                target="_blank"
+                href="{{ path('app_consultation_examens_bon', {id: consultation.id}) }}">
+                <i class="ri-printer-line me-1"></i> Bon d’examens
+                </a>
                     <table class="table align-middle">
                         <thead>
                         <tr>
@@ -711,5 +741,93 @@ document.addEventListener('submit', async (e) => {
         }
     }
     });
+</script>
+<script>
+document.addEventListener('click', async (e) => {
+  // Ouvrir modal
+  const open = e.target.closest('.js-open-bon');
+  if (open) {
+    const modalEl = document.querySelector('#bonExamenModal');
+    const content = modalEl.querySelector('.modal-content');
+    content.innerHTML = `<div class="modal-body p-4 text-center text-muted">Chargement...</div>`;
+    const res = await fetch(open.dataset.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+    content.innerHTML = await res.text();
+    return;
+  }
+
+  // Add row (dans la modal)
+  if (e.target.closest('.js-add-row')) {
+    const rows = document.querySelector('#rows');
+    if (!rows) return;
+
+    let idx = parseInt(rows.dataset.index || '1', 10);
+
+    rows.insertAdjacentHTML('beforeend', `
+      <div class="card mb-2 js-row">
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label">Libellé</label>
+              <input class="form-control" name="examens[${idx}][libelle]" placeholder="Ex: NFS, CRP, Glycémie...">
+            </div>
+            <div class="col-md-2">
+              <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="examens[${idx}][urgence]" value="1" id="u${idx}">
+                <label class="form-check-label" for="u${idx}">Urgent</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Note</label>
+              <input class="form-control" name="examens[${idx}][note]" placeholder="Optionnel">
+            </div>
+            <div class="col-md-1 text-end">
+              <button type="button" class="btn btn-outline-danger js-remove-row" title="Supprimer">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    rows.dataset.index = String(idx + 1);
+    return;
+  }
+
+  // Remove row
+  const rm = e.target.closest('.js-remove-row');
+  if (rm) {
+    rm.closest('.js-row')?.remove();
+    return;
+  }
+});
+
+// Submit create bon
+document.addEventListener('submit', async (e) => {
+  const form = e.target.closest('#bonCreateForm');
+  if (!form) return;
+
+  e.preventDefault();
+
+  const res = await fetch(form.action, {
+    method: 'POST',
+    body: new FormData(form),
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.success) {
+    alert(data?.message ?? 'Erreur création bon.');
+    return;
+  }
+
+  // refresh list
+  const list = document.querySelector('#bonExamenList');
+  if (list && data.listHtml) list.innerHTML = data.listHtml;
+
+  // close modal
+  const modalEl = document.querySelector('#bonExamenModal');
+  bootstrap.Modal.getInstance(modalEl)?.hide();
+});
 </script>
 {% endblock %}

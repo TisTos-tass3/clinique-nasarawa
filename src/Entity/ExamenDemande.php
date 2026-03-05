@@ -35,6 +35,39 @@ class ExamenDemande
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?string $prixUnitaire = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $resultatTexte = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $resultatSaisiLe = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Utilisateur $resultatSaisiPar = null;
+
+    public function setResultatTexte(?string $resultatTexte): self
+    {
+        $this->resultatTexte = $resultatTexte;
+        return $this;
+    }
+
+    public function getResultatTexte(): ?string
+    {
+        return $this->resultatTexte;
+    }
+
+    public function getResultatSaisiLe(): ?\DateTimeImmutable
+    {
+        return $this->resultatSaisiLe;
+    }
+
+    public function setResultatSaisiLe(?\DateTimeImmutable $resultatSaisiLe): static
+    {
+        $this->resultatSaisiLe = $resultatSaisiLe;
+
+        return $this;
+    }
+
     public function getPrixUnitaire(): ?string { return $this->prixUnitaire; }
     public function setPrixUnitaire(?string $prixUnitaire): self { $this->prixUnitaire = $prixUnitaire; return $this; }
 

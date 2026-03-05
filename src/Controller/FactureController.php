@@ -9,10 +9,16 @@ use App\Form\FactureType;
 use App\Repository\FactureRepository;
 use App\Service\BillingService;
 use Doctrine\ORM\EntityManagerInterface;
+use Endroid\QrCode\Builder\BuilderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelMedium;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/facture')]
 final class FactureController extends AbstractController
@@ -129,4 +135,25 @@ final class FactureController extends AbstractController
             'patient' => $facture->getConsultation()->getRendezVous()->getPatient(), // adapte si besoin
         ]);
     }
+
+#[Route('/facture/{id}/qr', name: 'app_facture_qr', methods: ['GET'])]
+public function qrFacture(Facture $facture, BuilderInterface $builder): Response
+{
+    $payload = $this->generateUrl(
+        'app_facture_print',
+        ['id' => $facture->getId()],
+        UrlGeneratorInterface::ABSOLUTE_URL
+    );
+
+    $result = $builder
+        ->data($payload)
+        ->size(300)
+        ->margin(10)
+        ->build();
+
+    return new Response($result->getString(), 200, [
+        'Content-Type' => $result->getMimeType(),
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+    ]);
+}
 }

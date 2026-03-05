@@ -2,11 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\BonExamen;
+use App\Entity\BonExamenLigne;
 use App\Entity\Consultation;
 use  App\Entity\Utilisateur;
 use App\Enum\StatutConsultation;
 use App\Form\ConsultationType;
 use App\Repository\ConsultationRepository;
+use App\Repository\BonExamenRepository;
 use App\Service\BillingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormError;
@@ -50,9 +53,11 @@ final class ConsultationController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_consultation_show', methods: ['GET'])]
-    public function show(Consultation $consultation): Response
+    public function show(Consultation $consultation, BonExamenRepository $bonRepo): Response
     {
+        $bonsLabo = $bonRepo->findBy(['consultation' => $consultation], ['id' => 'DESC']);
         return $this->render('consultation/show.html.twig', [
+            'bonsLabo' => $bonsLabo,
             'consultation' => $consultation,
         ]);
     }
@@ -194,5 +199,133 @@ final class ConsultationController extends AbstractController
             'facture' => $facture,
         ]);
     }
+
+    #[Route('/consultation/{id}/examens/bon', name: 'app_consultation_examens_bon', methods: ['GET'])]
+    public function bonExamens(Consultation $consultation): Response
+    {
+        $rdv = $consultation->getRendezVous();
+        $patient = $rdv?->getPatient();      // adapte si ton patient est ailleurs
+        $medecin = $consultation->getMedecin();
+
+        return $this->render('examen/bon.html.twig', [
+            'consultation' => $consultation,
+            'patient' => $patient,
+            'medecin' => $medecin,
+            'examens' => $consultation->getExamensDemandes(),
+        ]);
+    }
+
+    #[Route('/consultation/{id}/labo/bon/new', name: 'app_consultation_labo_bon_new', methods: ['GET', 'POST'])]
+    public function newBonFromConsultation(
+        Consultation $consultation,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $rdv = $consultation->getRendezVous();
+        $patient = $rdv?->getPatient();
+
+        if (!$patient) {
+            throw $this->createNotFoundException('Patient introuvable via le rendez-vous.');
+        }
+
+        if ($request->isMethod('POST')) {
+            $bon = new BonExamen();
+            $bon->setConsultation($consultation);
+            $bon->setPatient($patient);
+            $bon->setMedecin($consultation->getMedecin()); // adapte si getter différent
+            $bon->setNote($request->request->get('note') ?: null);
+
+            $libelles = $request->request->all('examens'); // array
+            foreach ($libelles as $lib) {
+                $lib = trim((string) $lib);
+                if ($lib === '') continue;
+
+                $ligne = (new BonExamenLigne())
+                    ->setLibelle($lib)
+                    ->setUrgence(false);
+
+                $bon->addLigne($ligne);
+            }
+
+            if ($bon->getLignes()->count() === 0) {
+                return $this->json(['success' => false, 'message' => 'Ajoutez au moins un examen.'], 422);
+            }
+
+            $em->persist($bon);
+            $em->flush();
+
+            return $this->json(['success' => true, 'bonId' => $bon->getId()]);
+        }
+
+        return $this->render('laboratoire/bons/_modal_new_from_consultation.html.twig', [
+            'consultation' => $consultation,
+            'patient' => $patient,
+        ]);
+    }
+
+    #[Route('/consultation/{id}/labo/bon/modal', name: 'app_consultation_labo_bon_modal', methods: ['GET', 'POST'])]
+public function laboBonModal(
+    Consultation $consultation,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    $rdv = $consultation->getRendezVous();
+    $patient = $rdv?->getPatient();
+
+    if (!$patient) {
+        return $this->json(['success' => false, 'message' => 'Patient introuvable via RDV.'], 422);
+    }
+
+    if ($request->isMethod('POST')) {
+        $bon = new BonExamen();
+        $bon->setConsultation($consultation);
+        $bon->setPatient($patient);
+        $bon->setMedecin($consultation->getMedecin());
+        $bon->setNote($request->request->get('note') ?: null);
+
+        $rows = $request->request->all('examens'); // examens[][libelle], examens[][urgence], examens[][note]
+        $count = 0;
+
+        foreach ($rows as $row) {
+            $libelle = trim((string)($row['libelle'] ?? ''));
+            if ($libelle === '') continue;
+
+            $urgence = (bool)($row['urgence'] ?? false);
+            $note = trim((string)($row['note'] ?? '')) ?: null;
+
+            $ligne = (new BonExamenLigne())
+                ->setLibelle($libelle)
+                ->setUrgence($urgence)
+                ->setNote($note);
+
+            $bon->addLigne($ligne);
+            $count++;
+        }
+
+        if ($count === 0) {
+            return $this->json(['success' => false, 'message' => 'Ajoutez au moins un examen.'], 422);
+        }
+
+        $em->persist($bon);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'bonId' => $bon->getId(),
+            'listHtml' => $this->renderView('laboratoire/bons/_consultation_list.html.twig', [
+                'consultation' => $consultation,
+                'bons' => $em->getRepository(BonExamen::class)->findBy(
+                    ['consultation' => $consultation],
+                    ['id' => 'DESC']
+                ),
+            ]),
+        ]);
+    }
+
+    return $this->render('laboratoire/bons/_modal_create.html.twig', [
+        'consultation' => $consultation,
+        'patient' => $patient,
+    ]);
+}
 
 }

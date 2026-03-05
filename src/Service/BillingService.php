@@ -1,18 +1,26 @@
 <?php
+
 namespace App\Service;
 
+use App\Entity\BonExamen;
 use App\Entity\Consultation;
 use App\Entity\Facture;
 use App\Entity\FactureLigne;
 use App\Enum\ModePaiement;
+use App\Enum\StatutBonExamen;
+use App\Enum\StatutExamenDemande;
 use App\Enum\StatutPaiement;
+use App\Repository\BonExamenRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-class BillingService
+final class BillingService
 {
-    public function __construct(private EntityManagerInterface $em) {}
+    public function __construct(
+        private EntityManagerInterface $em,
+        private BonExamenRepository $bonRepo, // ✅ injecte ce repo
+    ) {}
 
-    public function generateDraftInvoice(Consultation $c, float $forfaitConsultation = 0): Facture
+    public function generateDraftInvoice(Consultation $c, int $forfaitConsultation = 0): Facture
     {
         $facture = $c->getFacture();
 
@@ -24,45 +32,73 @@ class BillingService
 
             $this->em->persist($facture);
 
-            // IMPORTANT: assure-toi que Consultation a setFacture()
-            $c->setFacture($facture);
+            // si Consultation a setFacture()
+            if (method_exists($c, 'setFacture')) {
+                $c->setFacture($facture);
+            }
         }
 
-        // Si déjà payée => on ne touche pas (protection)
+        // Si déjà payée => on ne touche pas
         if ($facture->getStatutPaiement() === StatutPaiement::PAYE) {
             return $facture;
         }
 
         // Rebuild lignes (idempotent)
-        $facture->clearLignes();
+        if (method_exists($facture, 'clearLignes')) {
+            $facture->clearLignes();
+        } else {
+            // fallback si pas de clearLignes()
+            foreach ($facture->getLignes() as $l) {
+               // $facture->removeLigne($l);
+            }
+        }
 
+        // ============ 1) Forfait consultation ============
         if ($forfaitConsultation > 0) {
             $l = (new FactureLigne())
                 ->setType('CONSULTATION')
                 ->setLibelle('Consultation')
                 ->setQuantite(1)
-                ->setPrixUnitaire(number_format($forfaitConsultation, 2, '.', ''));
-            $l->recalc();
+                ->setPrixUnitaire($forfaitConsultation);
+
+            $this->recalcLine($l);
             $facture->addLigne($l);
         }
 
+        // ============ 2) Actes réalisés ============
         foreach ($c->getActesRealises() as $acte) {
-            $pu = $acte->getPrixUnitaire();
-            if ($pu === null || (float) $pu <= 0) continue;
+            $puStr = $acte->getPrixUnitaire(); // decimal string|null
+            $pu = $this->toIntFcfa($puStr);
+
+            if ($pu <= 0) {
+                continue;
+            }
+
+            $qte = (int)($acte->getQuantite() ?: 1);
 
             $l = (new FactureLigne())
                 ->setType('ACTE')
                 ->setLibelle($acte->getLibelle())
-                ->setQuantite($acte->getQuantite() ?: 1)
+                ->setQuantite($qte)
                 ->setPrixUnitaire($pu);
 
-            $l->recalc();
+            $this->recalcLine($l);
             $facture->addLigne($l);
         }
 
+        // ============ 3) Examens (ancien modèle ExamenDemande) ============
+        // Tu peux garder ou supprimer ce bloc selon ton choix.
+        // Si tu passes totalement sur BonExamen, tu peux le retirer.
         foreach ($c->getExamensDemandes() as $ex) {
-            $pu = $ex->getPrixUnitaire();
-            if ($pu === null || (float) $pu <= 0) continue;
+            if ($ex->getStatut() !== StatutExamenDemande::RESULTAT_RECU) {
+                continue;
+            }
+
+            $puStr = $ex->getPrixUnitaire(); // decimal string|null
+            $pu = $this->toIntFcfa($puStr);
+            if ($pu <= 0) {
+                continue;
+            }
 
             $l = (new FactureLigne())
                 ->setType('EXAMEN')
@@ -70,11 +106,53 @@ class BillingService
                 ->setQuantite(1)
                 ->setPrixUnitaire($pu);
 
-            $l->recalc();
+            $this->recalcLine($l);
             $facture->addLigne($l);
         }
 
-        $facture->recalcMontant();
+        // ============ 4) Examens (nouveau module labo BonExamen) ============
+        $bons = $this->bonRepo->findBy(
+            ['consultation' => $c, 'statut' => StatutBonExamen::RESULTATS_DISPONIBLES],
+            ['id' => 'DESC']
+        );
+
+        foreach ($bons as $bon) {
+            foreach ($bon->getLignes() as $bl) {
+                // Optionnel mais recommandé : ne facturer que si résultat saisi
+                if (method_exists($bl, 'isResultatValide') && !$bl->isResultatValide()) {
+                    continue;
+                }
+
+                $puStr = $bl->getPrixUnitaire(); // decimal string|null
+                $pu = $this->toIntFcfa($puStr);
+                if ($pu <= 0) {
+                    continue;
+                }
+
+                $l = (new FactureLigne())
+                    ->setType('EXAMEN')
+                    ->setLibelle($bl->getLibelle())
+                    ->setQuantite(1)
+                    ->setPrixUnitaire($pu);
+
+                $this->recalcLine($l);
+                $facture->addLigne($l);
+            }
+        }
+
+        // ============ 5) Total facture ============
+        if (method_exists($facture, 'recalcMontant')) {
+            $facture->recalcMontant();
+        } else {
+            // fallback
+            $montant = 0;
+            foreach ($facture->getLignes() as $l) {
+                $montant += (int)$l->getTotal();
+            }
+            $facture->setMontant((float)$montant);
+        }
+
+        $this->em->flush();
 
         return $facture;
     }
@@ -88,5 +166,32 @@ class BillingService
         $facture->setModePaiement($mode);
         $facture->setDatePaiement(new \DateTimeImmutable());
         $facture->setStatutPaiement(StatutPaiement::PAYE);
+
+        $this->em->flush();
+    }
+
+    private function recalcLine(FactureLigne $l): void
+    {
+        // Si tu as déjà $l->recalc() dans ton entity, garde-le.
+        if (method_exists($l, 'recalc')) {
+            $l->recalc();
+            return;
+        }
+
+        $qte = (int)$l->getQuantite();
+        $pu = (int)$l->getPrixUnitaire();
+        $l->setTotal($qte * $pu);
+    }
+
+    private function toIntFcfa(?string $decimal): int
+    {
+        if ($decimal === null) return 0;
+        $decimal = trim($decimal);
+        if ($decimal === '') return 0;
+
+        // Ex: "7000.00" => 7000
+        // Ex: "7000" => 7000
+        // On arrondit proprement
+        return (int) round((float) $decimal);
     }
 }
