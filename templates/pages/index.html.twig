@@ -240,9 +240,7 @@
         </div>
       </div>
       <div class="card-body">
-        <div id="patients_flow_chart" style="height:320px;" class="bg-light rounded-3 d-flex align-items-center justify-content-center">
-          <div class="text-muted">[Chart flux patients ici]</div>
-        </div>
+        <div id="patients_flow_chart" style="height:320px;" class="bg-light rounded-3"></div>
       </div>
     </div>
   </div>
@@ -254,14 +252,12 @@
         <a href="#" class="small text-decoration-underline">Détails</a>
       </div>
       <div class="card-body">
-        <div id="hosp_status_chart" style="height:220px;" class="bg-light rounded-3 d-flex align-items-center justify-content-center">
-          <div class="text-muted">[Donut statuts ici]</div>
-        </div>
+        <div id="hosp_status_chart" style="height:220px;" class="bg-light rounded-3"></div>
 
         <div class="mt-3 vstack gap-2">
-          <div class="d-flex justify-content-between"><span class="text-muted">En cours</span><span class="fw-semibold">18</span></div>
-          <div class="d-flex justify-content-between"><span class="text-muted">Sorties aujourd’hui</span><span class="fw-semibold">4</span></div>
-          <div class="d-flex justify-content-between"><span class="text-muted">Transferts</span><span class="fw-semibold">1</span></div>
+          <div class="d-flex justify-content-between"><span class="text-muted">En cours</span><span class="fw-semibold">{{ hospitalisations_count }}</span></div>
+          <div class="d-flex justify-content-between"><span class="text-muted">Sorties aujourd’hui</span><span class="fw-semibold">{{ hosp_sorties_today }}</span></div>
+          <div class="d-flex justify-content-between"><span class="text-muted">Transferts</span><span class="fw-semibold">{{ hosp_transfers }}</span></div>
         </div>
       </div>
     </div>
@@ -294,30 +290,38 @@
               </tr>
             </thead>
             <tbody>
+              {% for consult in last_consultations %}
               <tr>
-                <td>09:20</td>
-                <td class="fw-medium">Moussa A.</td>
-                <td>Consultation</td>
-                <td>Dr. Ibrahim</td>
-                <td><span class="badge bg-success-subtle text-success">Terminée</span></td>
-                <td class="text-end"><a href="#" class="btn btn-soft-secondary btn-sm">Dossier</a></td>
+                <td>{{ consult.createdAt|date('H:i') }}</td>
+                <td class="fw-medium">
+                    {{ consult.dossierMedical.patient.nom }} {{ consult.dossierMedical.patient.prenom }}
+                </td>
+                <td>
+                  {% if consult.statut.value == 'en_cours' %}
+                    Urgences
+                  {% else %}
+                    Consultation
+                  {% endif %}
+                </td>
+                <td>{{ consult.medecin.nomComplet }}</td>
+                <td>
+                    {% set badge = {
+                      'en_cours': ['warning','En cours'],
+                      'cloture': ['success','Terminée'],
+                      'brouillon': ['secondary','Brouillon'],
+                      'annule': ['danger','Annulé'],
+                    }[consult.statut.value] ?? ['secondary','?'] %}
+                    <span class="badge bg-{{ badge[0] }}-subtle text-{{ badge[0] }}">{{ badge[1] }}</span>
+                </td>
+                <td class="text-end">
+                    <a href="#" class="btn btn-soft-secondary btn-sm">Dossier</a>
+                </td>
               </tr>
+              {% else %}
               <tr>
-                <td>10:05</td>
-                <td class="fw-medium">Amina S.</td>
-                <td>Urgences</td>
-                <td>Dr. Mariama</td>
-                <td><span class="badge bg-warning-subtle text-warning">En cours</span></td>
-                <td class="text-end"><a href="#" class="btn btn-soft-secondary btn-sm">Suivi</a></td>
+                  <td colspan="6" class="text-center text-muted">Aucune consultation récente</td>
               </tr>
-              <tr>
-                <td>11:10</td>
-                <td class="fw-medium">Issa M.</td>
-                <td>Hospitalisation</td>
-                <td>Dr. Harouna</td>
-                <td><span class="badge bg-info-subtle text-info">Admis</span></td>
-                <td class="text-end"><a href="#" class="btn btn-soft-secondary btn-sm">Détails</a></td>
-              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -337,7 +341,7 @@
           <div class="p-3 border rounded-3">
             <div class="d-flex justify-content-between">
               <div class="fw-semibold">Impayés élevés</div>
-              <span class="badge bg-danger-subtle text-danger">12</span>
+              <span class="badge bg-danger-subtle text-danger">{{ unpaid_high_count }}</span>
             </div>
             <div class="text-muted small">Relancer les dossiers > 20 000 FCFA.</div>
           </div>
@@ -345,7 +349,7 @@
           <div class="p-3 border rounded-3">
             <div class="d-flex justify-content-between">
               <div class="fw-semibold">Urgences critiques</div>
-              <span class="badge bg-warning-subtle text-warning">2</span>
+              <span class="badge bg-warning-subtle text-warning">{{ critical_cases }}</span>
             </div>
             <div class="text-muted small">Prioriser triage + allocation personnel.</div>
           </div>
@@ -353,7 +357,7 @@
           <div class="p-3 border rounded-3">
             <div class="d-flex justify-content-between">
               <div class="fw-semibold">Lits presque saturés</div>
-              <span class="badge bg-info-subtle text-info">75%</span>
+              <span class="badge bg-info-subtle text-info">{{ occupancy_rate }}%</span>
             </div>
             <div class="text-muted small">Préparer sorties / transferts.</div>
           </div>
@@ -374,4 +378,40 @@
 {% block javascripts %}
   {{ parent() }}
   <script src="{{ asset('assets/js/pages/dashboard-ecommerce.init.js') }}"></script>
+
+  {# custom dashboard charts #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      var flowOptions = {
+        chart: { type: 'area', height: 320, toolbar: { show: false } },
+        series: [
+          { name: 'Consultations', data: {{ flow_consultations|json_encode()|raw }} },
+          { name: 'Urgences', data: {{ flow_urgences|json_encode()|raw }} }
+        ],
+        xaxis: { categories: {{ flow_labels|json_encode()|raw }} },
+        colors: ['#50a5f1', '#f1b44c'],
+        stroke: { curve: 'smooth' },
+        grid: { padding: { right: 10, left: 10 } },
+        tooltip: { shared: true, intersect: false }
+      };
+      var flowEl = document.querySelector('#patients_flow_chart');
+      if (flowEl) {
+        new ApexCharts(flowEl, flowOptions).render();
+      }
+
+      
+      var hospOptions = {
+        series: [{{ hospitalisations_count }}, {{ hosp_sorties_today }}, {{ hosp_transfers }}],
+        labels: ['En cours', 'Sorties aujourd’hui', 'Transferts'],
+        chart: { type: 'donut', height: 220 },
+        colors: ['#0acf97', '#50a5f1', '#f46a6a'],
+        legend: { position: 'bottom' }
+      };
+      var hospEl = document.querySelector('#hosp_status_chart');
+      if (hospEl) {
+        new ApexCharts(hospEl, hospOptions).render();
+      }
+    });
+  </script>
 {% endblock %}

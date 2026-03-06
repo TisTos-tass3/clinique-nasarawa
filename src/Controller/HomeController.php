@@ -144,6 +144,80 @@ class HomeController extends AbstractController
             ->getQuery()
             ->getSingleScalarResult();
 
+        
+        $unpaidHighCount = (int) $em->createQueryBuilder()
+            ->select('COUNT(f.id)')
+            ->from(Facture::class, 'f')
+            ->where('f.statutPaiement = :enattente')
+            ->andWhere('f.montant > :threshold')
+            ->setParameter('enattente', StatutPaiement::EN_ATTENTE->value)
+            ->setParameter('threshold', 20000)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        
+        $lastConsultations = $em->createQueryBuilder()
+            ->select('c','d','p','m')
+            ->from(Consultation::class, 'c')
+            ->join('c.dossierMedical', 'd')
+            ->join('d.patient', 'p')
+            ->join('c.medecin', 'm')
+            ->orderBy('c.createdAt', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        // Flux patients - 7 jours glissants (consultations + urgences)
+        $flowLabels = [];
+        $flowConsults = [];
+        $flowUrgences = [];
+        for ($i = 6; $i >= 0; --$i) {
+            $day = (clone $today)->modify("-{$i} days");
+            $nextDay = (clone $day)->modify('+1 day');
+            $flowLabels[] = $day->format('d M');
+
+            $flowConsults[] = (int) $em->createQueryBuilder()
+                ->select('COUNT(c.id)')
+                ->from(Consultation::class, 'c')
+                ->where('c.createdAt >= :day')
+                ->andWhere('c.createdAt < :next')
+                ->setParameter('day', $day)
+                ->setParameter('next', $nextDay)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $flowUrgences[] = (int) $em->createQueryBuilder()
+                ->select('COUNT(c.id)')
+                ->from(Consultation::class, 'c')
+                ->where('c.createdAt >= :day')
+                ->andWhere('c.createdAt < :next')
+                ->andWhere('c.statut = :encours')
+                ->setParameter('day', $day)
+                ->setParameter('next', $nextDay)
+                ->setParameter('encours', StatutConsultation::EN_COURS->value)
+                ->getQuery()
+                ->getSingleScalarResult();
+        }
+
+        
+        $sortiesToday = (int) $em->createQueryBuilder()
+            ->select('COUNT(h.id)')
+            ->from(Hospitalisation::class, 'h')
+            ->where('h.dateSortie >= :today')
+            ->andWhere('h.dateSortie < :tomorrow')
+            ->setParameter('today', $today)
+            ->setParameter('tomorrow', $tomorrow)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $transfers = (int) $em->createQueryBuilder()
+            ->select('COUNT(h.id)')
+            ->from(Hospitalisation::class, 'h')
+            ->where('h.motifAdmission LIKE :term')
+            ->setParameter('term', '%transfert%')
+            ->getQuery()
+            ->getSingleScalarResult();
+
         return $this->render('pages/index.html.twig', [
             'consultations_today' => $consultationsToday,
             'new_patients_today' => $newPatientsToday,
@@ -157,6 +231,13 @@ class HomeController extends AbstractController
             'receipts_today' => $receiptsToday,
             'unpaid_total' => $unpaidTotal,
             'unpaid_count' => $unpaidCount,
+            'unpaid_high_count' => $unpaidHighCount,
+            'last_consultations' => $lastConsultations,
+            'flow_labels' => $flowLabels,
+            'flow_consultations' => $flowConsults,
+            'flow_urgences' => $flowUrgences,
+            'hosp_sorties_today' => $sortiesToday,
+            'hosp_transfers' => $transfers,
         ]);
     }
 }

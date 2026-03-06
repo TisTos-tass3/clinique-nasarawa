@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260305142740 extends AbstractMigration
+final class Version20260306093205 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -33,6 +33,11 @@ final class Version20260305142740 extends AbstractMigration
         $this->addSql('ALTER TABLE bon_examen ADD CONSTRAINT FK_4530F7D64F31A84 FOREIGN KEY (medecin_id) REFERENCES utilisateur (id) NOT DEFERRABLE');
         $this->addSql('ALTER TABLE bon_examen_ligne ADD CONSTRAINT FK_65C1F3EAAD65737C FOREIGN KEY (bon_id) REFERENCES bon_examen (id) NOT DEFERRABLE');
         $this->addSql('ALTER TABLE bon_examen_ligne ADD CONSTRAINT FK_65C1F3EA7FF20340 FOREIGN KEY (resultat_saisi_par_id) REFERENCES utilisateur (id) NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE examen_demande ADD resultat_texte TEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE examen_demande ADD resultat_saisi_le TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
+        $this->addSql('ALTER TABLE examen_demande ADD resultat_saisi_par_id INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE examen_demande ADD CONSTRAINT FK_8514B0817FF20340 FOREIGN KEY (resultat_saisi_par_id) REFERENCES utilisateur (id) NOT DEFERRABLE');
+        $this->addSql('CREATE INDEX IDX_8514B0817FF20340 ON examen_demande (resultat_saisi_par_id)');
     }
 
     public function down(Schema $schema): void
@@ -45,5 +50,10 @@ final class Version20260305142740 extends AbstractMigration
         $this->addSql('ALTER TABLE bon_examen_ligne DROP CONSTRAINT FK_65C1F3EA7FF20340');
         $this->addSql('DROP TABLE bon_examen');
         $this->addSql('DROP TABLE bon_examen_ligne');
+        $this->addSql('ALTER TABLE examen_demande DROP CONSTRAINT FK_8514B0817FF20340');
+        $this->addSql('DROP INDEX IDX_8514B0817FF20340');
+        $this->addSql('ALTER TABLE examen_demande DROP resultat_texte');
+        $this->addSql('ALTER TABLE examen_demande DROP resultat_saisi_le');
+        $this->addSql('ALTER TABLE examen_demande DROP resultat_saisi_par_id');
     }
 }
