@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Entity\BonExamen;
 use App\Entity\BonExamenLigne;
 use App\Entity\Consultation;
+use App\Entity\PrescriptionPrestation;
 use  App\Entity\Utilisateur;
 use App\Enum\StatutConsultation;
 use App\Form\ConsultationType;
+use App\Form\PrescriptionPrestationType;
 use App\Repository\ConsultationRepository;
 use App\Repository\BonExamenRepository;
 use App\Service\BillingService;
@@ -62,97 +64,155 @@ final class ConsultationController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_consultation_edit', methods: ['GET', 'POST'])]
-    public function edit(
-        Request $request,
-        Consultation $consultation,
-        EntityManagerInterface $em
-    ): Response {
-        $form = $this->createForm(ConsultationType::class, $consultation);
-        $form->handleRequest($request);
 
-        // ---------- CAS AJAX (MODAL) ----------
-        if ($request->isXmlHttpRequest()) {
+    #[Route('/consultation/{id}/prestation/new', name: 'app_prescription_prestation_new', methods: ['GET', 'POST'])]
+public function new(
+    Request $request,
+    Consultation $consultation,
+    EntityManagerInterface $em
+): Response {
+    $prescription = new PrescriptionPrestation();
+    $prescription->setConsultation($consultation);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $em->flush();
+    $form = $this->createForm(PrescriptionPrestationType::class, $prescription, [
+        'action' => $this->generateUrl('app_prescription_prestation_new', ['id' => $consultation->getId()]),
+        'method' => 'POST',
+    ]);
 
-                return $this->json([
-                    'success' => true,
-                    'message' => 'Consultation mise à jour avec succès.'
-                ]);
-            }
+    $form->handleRequest($request);
 
-            return $this->render('consultation/edit.html.twig', [
-                'form' => $form->createView(),
-                'consultation' => $consultation,
+    if ($request->isXmlHttpRequest()) {
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($prescription);
+            $em->flush();
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Prestation ajoutée avec succès.',
             ]);
         }
 
-        // ---------- CAS NORMAL ----------
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            return $this->redirectToRoute('app_consultation_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('consultation/edit.html.twig', [
-            'consultation' => $consultation,
+        return $this->render('consultation/prestations/_form.html.twig', [
             'form' => $form->createView(),
+            'consultation' => $consultation,
+            'prescription' => $prescription,
         ]);
     }
 
-    #[Route('/new', name: 'app_consultation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $consultation = new Consultation();
-        $form = $this->createForm(ConsultationType::class, $consultation);
-        $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->persist($prescription);
+        $em->flush();
 
+        return $this->redirectToRoute('app_consultation_show', [
+            'id' => $consultation->getId(),
+        ]);
+    }
+
+    return $this->render('consultation/prestations/new.html.twig', [
+        'form' => $form->createView(),
+        'consultation' => $consultation,
+        'prescription' => $prescription,
+    ]);
+}
+
+#[Route('/prestation/{id}/edit', name: 'app_prescription_prestation_edit', methods: ['GET', 'POST'])]
+public function edit(
+    Request $request,
+    PrescriptionPrestation $prescription,
+    EntityManagerInterface $em
+): Response {
+    $form = $this->createForm(PrescriptionPrestationType::class, $prescription, [
+        'action' => $this->generateUrl('app_prescription_prestation_edit', ['id' => $prescription->getId()]),
+        'method' => 'POST',
+    ]);
+
+    $form->handleRequest($request);
+
+    if ($request->isXmlHttpRequest()) {
         if ($form->isSubmitted() && $form->isValid()) {
-            if (null === $consultation->getDossierMedical()) {
-                $form->addError(new FormError('Le dossier médical est requis.'));
-            } else {
-                if (null === $consultation->getMedecin() && $this->getUser() instanceof Utilisateur) {
-                    $consultation->setMedecin($this->getUser());
-                }
+            $em->flush();
 
-                $entityManager->persist($consultation);
-                $entityManager->flush();
-
-                return $this->redirectToRoute('app_consultation_index', [], Response::HTTP_SEE_OTHER);
-            }
+            return $this->json([
+                'success' => true,
+                'message' => 'Prestation modifiée avec succès.',
+            ]);
         }
 
-        return $this->render('consultation/new.html.twig', [
-            'consultation' => $consultation,
-            'form' => $form,
+        return $this->render('consultation/prestations/_form.html.twig', [
+            'form' => $form->createView(),
+            'consultation' => $prescription->getConsultation(),
+            'prescription' => $prescription,
         ]);
-    } 
+    }
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->flush();
+
+        return $this->redirectToRoute('app_consultation_show', [
+            'id' => $prescription->getConsultation()->getId(),
+        ]);
+    }
+
+    return $this->render('consultation/prestations/edit.html.twig', [
+        'form' => $form->createView(),
+        'consultation' => $prescription->getConsultation(),
+        'prescription' => $prescription,
+    ]);
+}
 
 
 
-    #[Route('/{id}/medical', name: 'app_consultation_medical_edit', methods: ['GET', 'POST'])]
+   #[Route('/{id}/medical', name: 'app_consultation_medical_edit', methods: ['GET', 'POST'])]
     public function editMedical(
         Request $request,
         Consultation $consultation,
         EntityManagerInterface $em
     ): Response {
-        // Guard statut : pas modifiable si clôturée/annulée
         if (\in_array($consultation->getStatut(), [StatutConsultation::CLOTURE, StatutConsultation::ANNULE], true)) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Consultation clôturée/annulée : modification interdite.'
+                ], 403);
+            }
+
             $this->addFlash('warning', 'Consultation clôturée/annulée : modification interdite.');
             return $this->redirectToRoute('app_consultation_show', ['id' => $consultation->getId()]);
         }
 
-        // IMPORTANT : Form dédié Phase C (à créer)
         $form = $this->createForm(ConsultationType::class, $consultation, [
             'context' => 'medical',
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Données médicales enregistrées.');
-            return $this->redirectToRoute('app_consultation_show', ['id' => $consultation->getId()]);
+                    if ($form->isSubmitted()) {
+                    if ($form->isValid()) {
+                $em->flush();
+
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json([
+                        'success' => true,
+                        'message' => 'Données médicales enregistrées.'
+                    ]);
+                }
+
+                $this->addFlash('success', 'Données médicales enregistrées.');
+                return $this->redirectToRoute('app_consultation_show', ['id' => $consultation->getId()]);
+            }
+
+            if ($request->isXmlHttpRequest()) {
+                return $this->render('consultation/_medical_form.html.twig', [
+                    'consultation' => $consultation,
+                    'form' => $form->createView(),
+                ], new Response('', 422));
+            }
+        }
+
+        if ($request->isXmlHttpRequest()) {
+        return $this->render('consultation/_medical_form.html.twig', [
+            'consultation' => $consultation,
+            'form' => $form->createView(),
+        ]);
         }
 
         return $this->render('consultation/medical_edit.html.twig', [

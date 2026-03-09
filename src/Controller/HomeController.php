@@ -12,6 +12,7 @@ use App\Entity\RendezVous;
 use App\Entity\Hospitalisation;
 use App\Entity\Facture;
 use App\Enum\StatutConsultation;
+use App\Enum\StatutFacture;
 use App\Enum\StatutHospitalisation;
 use App\Enum\StatutPaiement;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
@@ -115,26 +116,24 @@ class HomeController extends AbstractController
         }
         $bedsAvailable = max(0, $capacity - $hospitalisationsCount);
         $occupancyRate = $capacity > 0 ? (int) round(($hospitalisationsCount / $capacity) * 100) : 0;
-
+/* 
         
-        $receiptsToday = (float) $em->createQueryBuilder()
-            ->select('COALESCE(SUM(f.montant), 0)')
-            ->from(Facture::class, 'f')
-            ->where('f.dateEmission >= :today')
-            ->andWhere('f.dateEmission < :tomorrow')
-            ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
-            ->getQuery()
-            ->getSingleScalarResult();
+$receiptsToday = (float) $em->createQueryBuilder()
+    ->select('COALESCE(SUM(f.montantTotal), 0)')
+    ->from(Facture::class, 'f')
+    ->where('f.dateEmission >= :today')
+    ->andWhere('f.dateEmission < :tomorrow')
+    ->setParameter('today', $today)
+    ->setParameter('tomorrow', $tomorrow)
+    ->getQuery()
+    ->getSingleScalarResult();
 
-        
-        $unpaidTotal = (float) $em->createQueryBuilder()
-            ->select('COALESCE(SUM(f.montant), 0)')
-            ->from(Facture::class, 'f')
-            ->where('f.statutPaiement = :enattente')
-            ->setParameter('enattente', StatutPaiement::EN_ATTENTE->value)
-            ->getQuery()
-            ->getSingleScalarResult();
+$unpaidTotal = (float) $em->createQueryBuilder()
+    ->select('COALESCE(SUM(f.resteAPayer), 0)')
+    ->from(Facture::class, 'f')
+    ->where('f.resteAPayer > 0')
+    ->getQuery()
+    ->getSingleScalarResult();
 
         $unpaidCount = (int) $em->createQueryBuilder()
             ->select('COUNT(f.id)')
@@ -154,7 +153,7 @@ class HomeController extends AbstractController
             ->setParameter('threshold', 20000)
             ->getQuery()
             ->getSingleScalarResult();
-
+ */
         
         $lastConsultations = $em->createQueryBuilder()
             ->select('c','d','p','m')
@@ -228,10 +227,10 @@ class HomeController extends AbstractController
             'hospitalisations_count' => $hospitalisationsCount,
             'beds_available' => $bedsAvailable,
             'occupancy_rate' => $occupancyRate,
-            'receipts_today' => $receiptsToday,
-            'unpaid_total' => $unpaidTotal,
-            'unpaid_count' => $unpaidCount,
-            'unpaid_high_count' => $unpaidHighCount,
+            'receipts_today' => null,
+            'unpaid_total' => null,
+            'unpaid_count' => null,
+            'unpaid_high_count' => null,
             'last_consultations' => $lastConsultations,
             'flow_labels' => $flowLabels,
             'flow_consultations' => $flowConsults,
