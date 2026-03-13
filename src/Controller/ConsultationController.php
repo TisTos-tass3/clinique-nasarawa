@@ -23,47 +23,49 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/consultation')]
 final class ConsultationController extends AbstractController
 {
-     #[Route(name: 'app_consultation_index', methods: ['GET', 'POST'])]
-    public function index(
-        Request $request,
-        ConsultationRepository $consultationRepository,
-        EntityManagerInterface $em
-    ): Response {
-        $consultation = new Consultation();
-        $form = $this->createForm(ConsultationType::class, $consultation);
-        $form->handleRequest($request);
+    #[Route(name: 'app_consultation_index', methods: ['GET', 'POST'])]
+public function index(
+    Request $request,
+    ConsultationRepository $consultationRepository,
+    EntityManagerInterface $em
+): Response {
+    $consultation = new Consultation();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            if (null === $consultation->getDossierMedical()) {
-                $form->addError(new FormError('Le dossier médical est requis.'));
-            } else {
-                if (null === $consultation->getMedecin() && $this->getUser() instanceof Utilisateur) {
-                    $consultation->setMedecin($this->getUser());
-                }
+    $form = $this->createForm(ConsultationType::class, $consultation, [
+        'context' => 'admin',
+    ]);
+    $form->handleRequest($request);
 
-                $em->persist($consultation);
-                $em->flush();
-
-                return $this->redirectToRoute('app_consultation_index');
-            }
-        }
-        $q = trim((string) $request->query->get('q', ''));
-
-        if ($q !== '') {
-            $consultations = $consultationRepository->searchByDossierOrPatientCode($q);
+    if ($form->isSubmitted() && $form->isValid()) {
+        if (null === $consultation->getDossierMedical()) {
+            $form->addError(new FormError('Le dossier médical est requis.'));
         } else {
-            $consultations = $consultationRepository->findBy([], ['createdAt' => 'DESC']);
+            if (null === $consultation->getMedecin() && $this->getUser() instanceof Utilisateur) {
+                $consultation->setMedecin($this->getUser());
+            }
+
+            $em->persist($consultation);
+            $em->flush();
+
+            $this->addFlash('success', 'Consultation créée avec succès.');
+
+            return $this->redirectToRoute('app_consultation_index');
         }
-
-        return $this->render('consultation/index.html.twig', [
-            'consultations' => $consultations,
-        ]);
-
-        return $this->render('consultation/index.html.twig', [
-            'consultations' => $consultationRepository->findAll(),
-            'form' => $form->createView(),
-        ]);
     }
+
+    $q = trim((string) $request->query->get('q', ''));
+
+    if ($q !== '') {
+        $consultations = $consultationRepository->searchByDossierOrPatientCode($q);
+    } else {
+        $consultations = $consultationRepository->findBy([], ['createdAt' => 'DESC']);
+    }
+
+    return $this->render('consultation/index.html.twig', [
+        'consultations' => $consultations,
+        'form' => $form->createView(),
+    ]);
+}
 
     #[Route('/{id}', name: 'app_consultation_show', methods: ['GET'])]
     public function show(Consultation $consultation, BonExamenRepository $bonRepo): Response

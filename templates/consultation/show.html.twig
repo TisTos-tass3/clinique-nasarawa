@@ -393,7 +393,6 @@
         </div>
     </div>
 </div>
-
 {# =========================
    MODAL RESUME PRESCRIPTION (AJAX)
 ========================= #}
@@ -622,4 +621,152 @@ console.log('submit final url =', response.url);
         });
     })();
     </script>
+    <script>
+(() => {
+    const prestationModalEl = document.getElementById('prestationModal');
+    const prestationModalContent = document.getElementById('prestationModalContent');
+
+    if (!prestationModalEl || !prestationModalContent) {
+        console.error('Modale prestation introuvable');
+        return;
+    }
+
+    function showLoading() {
+        prestationModalContent.innerHTML = `
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 mb-0">Chargement...</p>
+            </div>
+        `;
+    }
+
+    function showError(message, details = '') {
+        prestationModalContent.innerHTML = `
+            <div class="modal-header">
+                <h5 class="modal-title">Erreur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-0">
+                    <div class="fw-semibold mb-1">${message || 'Impossible de charger le formulaire.'}</div>
+                    ${details ? `<pre class="small mt-2 mb-0" style="white-space: pre-wrap;">${details}</pre>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function bindPrestationForm() {
+        const form = prestationModalContent.querySelector('#prestationForm') || prestationModalContent.querySelector('form');
+        console.log('bindPrestationForm =>', !!form);
+
+        if (!form) {
+            showError('Le formulaire prestation est introuvable.', prestationModalContent.innerHTML);
+            return;
+        }
+
+        if (form.dataset.bound === '1') return;
+        form.dataset.bound = '1';
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            console.log('SUBMIT prestation intercepté');
+
+            const submitBtn = form.querySelector('.js-submit-prestation, button[type="submit"]');
+            const oldHtml = submitBtn ? submitBtn.innerHTML : '';
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Enregistrement...`;
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: (form.method || 'POST').toUpperCase(),
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                console.log('submit prestation status=', response.status, 'contentType=', contentType);
+                console.log('submit prestation redirected=', response.redirected);
+                console.log('submit prestation final url=', response.url);
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    console.log('JSON prestation reçu:', data);
+
+                    if (response.ok && data.success) {
+                        bootstrap.Modal.getInstance(prestationModalEl)?.hide();
+                        window.location.reload();
+                        return;
+                    }
+
+                    showError(data.message || 'Erreur lors de l’enregistrement.');
+                    return;
+                }
+
+                const html = await response.text();
+                prestationModalContent.innerHTML = html;
+                bindPrestationForm();
+            } catch (error) {
+                console.error('Erreur soumission prestation:', error);
+                showError('Erreur JS/fetch pendant la soumission.', error.message || '');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = oldHtml;
+                }
+            }
+        });
+    }
+
+    async function openPrestationModal(url) {
+        console.log('openPrestationModal =>', url);
+        showLoading();
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const html = await response.text();
+            console.log('GET prestation status=', response.status);
+
+            if (!response.ok) {
+                showError(`Chargement impossible (HTTP ${response.status})`, html);
+                return;
+            }
+
+            prestationModalContent.innerHTML = html;
+            bindPrestationForm();
+        } catch (error) {
+            console.error('Erreur chargement prestation:', error);
+            showError('Impossible de charger le formulaire.', error.message || '');
+        }
+    }
+
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-add-prestation, .js-edit-prestation');
+        if (!btn) return;
+
+        const url = btn.dataset.url;
+        console.log('clic prestation =>', url);
+
+        if (!url) {
+            showError('Aucune URL trouvée pour la modale prestation.');
+            return;
+        }
+
+        openPrestationModal(url);
+    });
+
+    prestationModalEl.addEventListener('hidden.bs.modal', function () {
+        showLoading();
+    });
+})();
+</script>
 {% endblock %}

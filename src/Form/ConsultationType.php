@@ -129,7 +129,7 @@ class ConsultationType extends AbstractType
                 ]);
             }
 
-            if ($builder->getData() && property_exists($builder->getData(), 'facture')) {
+            /* if ($builder->getData() && property_exists($builder->getData(), 'facture')) {
                 $builder->add('facture', EntityType::class, [
                     'class' => Facture::class,
                     'choice_label' => 'id',
@@ -137,7 +137,7 @@ class ConsultationType extends AbstractType
                     'placeholder' => '— Aucune facture —',
                     'label' => 'Facture',
                 ]);
-            }
+            } */
 
             if ($builder->getData() && property_exists($builder->getData(), 'tarifPrestation')) {
                 $builder->add('tarifPrestation', EntityType::class, [

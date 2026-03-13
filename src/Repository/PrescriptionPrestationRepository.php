@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Consultation;
 use App\Entity\PrescriptionPrestation;
+use App\Enum\StatutPrescriptionPrestation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -59,6 +60,67 @@ class PrescriptionPrestationRepository extends ServiceEntityRepository
             ->setParameter('aFacturer', true)
             ->setParameter('statut', 'prescrit')
             ->orderBy('pp.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+     public function findExamensLaboAPrendreEnCharge(): array
+    {
+        return $this->createQueryBuilder('pp')
+            ->leftJoin('pp.consultation', 'c')->addSelect('c')
+            ->leftJoin('c.rendezVous', 'r')->addSelect('r')
+            ->leftJoin('r.patient', 'p')->addSelect('p')
+            ->leftJoin('c.medecin', 'm')->addSelect('m')
+            ->leftJoin('pp.tarifPrestation', 'tp')->addSelect('tp')
+            ->andWhere('pp.statut = :statut')
+            ->andWhere('tp.serviceExecution = :service')
+            ->setParameter('statut', StatutPrescriptionPrestation::PAYE)
+            ->setParameter('service', 'laboratoire')
+            ->orderBy('pp.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Examens labo en cours
+     *
+     * @return PrescriptionPrestation[]
+     */
+    public function findExamensLaboEnCours(): array
+    {
+        return $this->createQueryBuilder('pp')
+            ->leftJoin('pp.consultation', 'c')->addSelect('c')
+            ->leftJoin('c.rendezVous', 'r')->addSelect('r')
+            ->leftJoin('r.patient', 'p')->addSelect('p')
+            ->leftJoin('c.medecin', 'm')->addSelect('m')
+            ->leftJoin('pp.tarifPrestation', 'tp')->addSelect('tp')
+            ->andWhere('pp.statut = :statut')
+            ->andWhere('tp.serviceExecution = :service')
+            ->setParameter('statut', StatutPrescriptionPrestation::EN_COURS)
+            ->setParameter('service', 'laboratoire')
+            ->orderBy('pp.modifiedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Examens labo réalisés
+     *
+     * @return PrescriptionPrestation[]
+     */
+    public function findExamensLaboRealises(): array
+    {
+        return $this->createQueryBuilder('pp')
+            ->leftJoin('pp.consultation', 'c')->addSelect('c')
+            ->leftJoin('c.rendezVous', 'r')->addSelect('r')
+            ->leftJoin('r.patient', 'p')->addSelect('p')
+            ->leftJoin('c.medecin', 'm')->addSelect('m')
+            ->leftJoin('pp.tarifPrestation', 'tp')->addSelect('tp')
+            ->andWhere('pp.statut = :statut')
+            ->andWhere('tp.serviceExecution = :service')
+            ->setParameter('statut', StatutPrescriptionPrestation::REALISE)
+            ->setParameter('service', 'laboratoire')
+            ->orderBy('pp.modifiedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }

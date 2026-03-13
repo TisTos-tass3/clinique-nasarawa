@@ -28,7 +28,7 @@ class Consultation
     private ?DossierMedical $dossierMedical = null;
 
      #[ORM\OneToOne(inversedBy: 'consultation')]
-    #[ORM\JoinColumn(nullable: false, unique: true)]
+    #[ORM\JoinColumn(nullable: true, unique: true)]
     private ?RendezVous $rendezVous = null;
 
     #[ORM\Column(enumType: StatutConsultation::class)]
