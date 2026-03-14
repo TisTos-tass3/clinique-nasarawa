@@ -459,4 +459,12 @@ public function editAdmin(
     ]);
 }
 
+#[Route('/{id}/fiche', name: 'app_consultation_print_fiche', methods: ['GET'])]
+public function printFiche(Consultation $consultation): Response
+{
+    return $this->render('consultation/print_fiche.html.twig', [
+        'consultation' => $consultation,
+    ]);
+}
+
 }

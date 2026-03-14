@@ -86,6 +86,15 @@
                 <i class="ri-file-text-line me-1"></i> Prescription
             </button> #}
 
+            <a href="{{ path('app_consultation_print_fiche', {id: consultation.id}) }}"
+            target="_blank"
+            class="btn btn-success">
+
+                <i class="fa fa-print me-1"></i>
+                Fiche consultation
+
+            </a>
+
             {{ include('consultation/_delete_form.html.twig') }}
         </div>
     </div>
@@ -117,7 +126,7 @@
                                 <th>Catégorie</th>
                                 <th>Quantité</th>
                                 <th>Instructions</th>
-                                <th>Statut</th>
+                        
                                 <th>Résultat</th>
                                 <th class="text-end">Actions</th>
                             </tr>
@@ -136,23 +145,6 @@
                                 </td>
                                 <td>{{ p.quantite|default(1) }}</td>
                                 <td>{{ p.instructions ?: '-' }}</td>
-                                <td>
-                                    {% if p.statut.value == 'prescrit' %}
-                                        <span class="badge bg-warning-subtle text-warning">Prescrit</span>
-                                    {% elseif p.statut.value == 'facture' %}
-                                        <span class="badge bg-info-subtle text-info">Facturé</span>
-                                    {% elseif p.statut.value == 'paye' %}
-                                        <span class="badge bg-primary-subtle text-primary">Payé</span>
-                                    {% elseif p.statut.value == 'en_cours' %}
-                                        <span class="badge bg-secondary-subtle text-secondary">En cours</span>
-                                    {% elseif p.statut.value == 'realise' %}
-                                        <span class="badge bg-success-subtle text-success">Réalisé</span>
-                                    {% elseif p.statut.value == 'annule' %}
-                                        <span class="badge bg-danger-subtle text-danger">Annulé</span>
-                                    {% else %}
-                                        <span class="badge bg-light text-dark">{{ p.statut.value }}</span>
-                                    {% endif %}
-                                </td>
                                 <td>
                                     {% if isLabo and p.resultatLaboratoire %}
                                         <div class="d-flex flex-wrap gap-2">
