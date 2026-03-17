@@ -93,13 +93,28 @@
         <button onclick="window.close()">Fermer</button>
     </div>
 
-    <div class="clinic-header">
-        <h2>CLINIQUE MEDICALE NASSARAWA</h2>
-        <div>NIF : 120402/R &nbsp;&nbsp; NE-NIM-01-2024-B12-00145</div>
-        <div>Yantala Haut Avenue du Daoura YN 187</div>
-        <div>TEL: 00227 20 75 51 02 / 88 05 22 20</div>
-        <div>BP: 2120 Niamey</div>
-        <div>Email: nassrawaclinique@gmail.com</div>
+    <div class="clinic-header" style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+        <div>
+            <h2>CLINIQUE MEDICALE NASSARAWA</h2>
+            <div>NIF : 120402/R &nbsp;&nbsp; NE-NIM-01-2024-B12-00145</div>
+            <div>Yantala Haut Avenue du Daoura YN 187</div>
+            <div>TEL: 00227 20 75 51 02 / 88 05 22 20</div>
+            <div>BP: 2120 Niamey</div>
+            <div>Email: nassrawaclinique@gmail.com</div>
+        </div>
+
+        <div style="text-align:center; min-width:140px;">
+            {% set _qr = qr_data is defined ? qr_data : (qrCodeDataUri is defined ? qrCodeDataUri : null) %}
+            {% if _qr %}
+                <img src="{{ _qr }}" alt="QR Code" style="width:120px; height:120px; display:block; margin:0 auto 6px;">
+            {% endif %}
+            {% if code_qr is defined and code_qr %}
+                <div style="font-size:12px;">Code: {{ code_qr }}</div>
+            {% endif %}
+            {% if verifyUrl is defined and verifyUrl %}
+                <div style="font-size:10px; margin-top:4px;"><a href="{{ verifyUrl }}">Vérifier</a></div>
+            {% endif %}
+        </div>
     </div>
 
     <div class="title">Examens laboratoire</div>

@@ -23,14 +23,14 @@ class Facture
     #[ORM\JoinColumn(nullable: false)]
     private ?Consultation $consultation = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $montantTotal = 0;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $montantTotal = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $montantPaye = 0;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $montantPaye = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $resteAPayer = 0;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $resteAPayer = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $dateEmission;
@@ -84,7 +84,7 @@ class Facture
 
     public function getMontantTotal(): int
     {
-        return $this->montantTotal;
+        return $this->montantTotal ?? 0;
     }
 
     public function setMontantTotal(int $montantTotal): static
@@ -95,7 +95,7 @@ class Facture
 
     public function getMontantPaye(): int
     {
-        return $this->montantPaye;
+        return $this->montantPaye ?? 0;
     }
 
     public function setMontantPaye(int $montantPaye): static
@@ -106,7 +106,7 @@ class Facture
 
     public function getResteAPayer(): int
     {
-        return $this->resteAPayer;
+        return $this->resteAPayer ?? 0;
     }
 
     public function setResteAPayer(int $resteAPayer): static
