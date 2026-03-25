@@ -35,7 +35,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/consultation')]
 final class ConsultationController extends AbstractController
 {
-    #[IsGranted(new Expression(
+#[IsGranted(new Expression(
     "is_granted('ROLE_ADMIN') or is_granted('ROLE_ACCUEIL') or is_granted('ROLE_MEDECIN') or is_granted('ROLE_INFIRMIER')"
 ))]
 #[Route(name: 'app_consultation_index', methods: ['GET', 'POST'])]
@@ -70,7 +70,10 @@ public function index(
 
     $search = $request->query->get('search');
 
-    $consultations = $consultationRepository->searchByDossierCodeOrTelephone($search);
+    /** @var Utilisateur $user */
+    $user = $this->getUser();
+
+    $consultations = $consultationRepository->searchVisibleForUser($search, $user);
 
     return $this->render('consultation/index.html.twig', [
         'consultations' => $consultations,
